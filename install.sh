@@ -6,8 +6,8 @@ echo "🔐 Installing VaultCLI..."
 OS="$(uname -s)"
 
 if [ "$OS" = "Linux" ]; then
-  URL="https://github.com/wynnee0110/VaultCLI/releases/tag/v1.0.0"
-  CHECKSUM_URL="https://github.com/wynnee0110/VaultCLI/releases/tag/v1.0.0"
+URL="https://github.com/wynnee0110/VaultCLI/releases/download/v1.0.0/vault-linuxV1"
+CHECKSUM_URL="https://github.com/wynnee0110/VaultCLI/releases/download/v1.0.0/vault-linuxV1.sha256"
 else
   echo "❌ Only Linux is supported right now"
   exit 1
