@@ -1,5 +1,6 @@
 .env
 session.json
+.vault_key
 __pycache__/
 *.py[cod]
 venv/

@@ -16,5 +16,10 @@ rm -rf "$ROOT_DIR/build" "$ROOT_DIR/dist" "$ROOT_DIR/.pyarmor"
   "$ROOT_DIR/pyinstaller_entry.py" \
   "$ROOT_DIR/vaultcli"
 
+(
+  cd "$ROOT_DIR/dist"
+  sha256sum vault-linuxV1 > vault-linuxV1.sha256
+)
+
 echo
-echo "Obfuscated build created at: $ROOT_DIR/dist/vault-linuxv1"
+echo "Obfuscated build created at: $ROOT_DIR/dist/vault-linuxV1"
