@@ -22,7 +22,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='vault',
+    name='vault-linuxv1',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
