@@ -10,13 +10,15 @@ requires-python = ">=3.10"
 dependencies = [
     "cryptography==47.0.0",
     "python-dotenv==1.2.2",
+    "requests>=2.32.0",
     "supabase==2.29.0",
     "supabase-auth==2.29.0",
     "supabase-functions==2.29.0",
 ]
 
 [project.scripts]
-vaultcli = "main:main"
+vault = "vaultcli.main:main"
+
 
 [tool.setuptools]
-py-modules = ["auth", "main", "session", "vault"]
+packages = ["vaultcli"]
