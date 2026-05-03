@@ -6,7 +6,7 @@ echo "🔐 Installing VaultCLI..."
 OS="$(uname -s)"
 
 if [ "$OS" = "Linux" ]; then
-  URL="https://github.com/wynnee0110/VaultV1/releases/latest/download/vault-linuxV1"
+  URL="https://github.com/wynnee0110/VaultCLI/releases/latest/download/vault-linuxV1"
   CHECKSUM_URL="https://github.com/wynnee0110/VaultCLI/releases/latest/download/vault-linuxV1.sha256"
 else
   echo "❌ Only Linux is supported right now"
@@ -30,7 +30,6 @@ echo "🔎 Verifying checksum..."
 
 cd "$TMP_DIR"
 
-# safer manual verification (works with plain hash file)
 EXPECTED_HASH=$(cat vault.sha256)
 ACTUAL_HASH=$(sha256sum vault | awk '{print $1}')
 
