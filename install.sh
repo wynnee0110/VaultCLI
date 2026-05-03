@@ -11,14 +11,14 @@ elif [ "$OS" = "Darwin" ]; then
   echo "❌ Mac not supported yet"
   exit 1
 else
-  echo "❌ Windows not supported here"
+  echo "❌ Windows not supported"
   exit 1
 fi
 
 TMP_FILE=$(mktemp)
 
 echo "⬇️ Downloading VaultCLI..."
-curl -L "$URL" -o "$TMP_FILE"   # <-- IMPORTANT: -L handles redirect
+curl -LfsSL "$URL" -o "$TMP_FILE"
 
 chmod +x "$TMP_FILE"
 sudo mv "$TMP_FILE" /usr/local/bin/vault
