@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import platform
-from PyInstaller.utils.hooks import collect_submodules
+from PyInstaller.utils.hooks import collect_submodules  
 
 # ---------------------------------------------------
 # Detect operating system
@@ -34,6 +34,8 @@ else:
 # ---------------------------------------------------
 
 supabase_hiddenimports = collect_submodules("supabase")
+argon2_hiddenimports = collect_submodules("argon2")
+crypt_hiddenimports = collect_submodules("cryptography")
 
 
 # ---------------------------------------------------

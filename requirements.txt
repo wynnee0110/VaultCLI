@@ -1,7 +1,8 @@
-# VaultCli dependencies
-cryptography==47.0.0
-python-dotenv==1.2.2
-requests>=2.32.0
+# VaultCLI dependencies
+
 supabase==2.29.0
-supabase-auth==2.29.0
-supabase-functions==2.29.0
+cryptography==47.0.0
+argon2-cffi==23.1.0
+requests>=2.32.0
+python-dotenv==1.2.2
+questionary
