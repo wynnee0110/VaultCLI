@@ -12,6 +12,7 @@ jobs:
   build:
     name: Build ${{ matrix.os_name }} binary
     runs-on: ${{ matrix.runner }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -24,27 +25,56 @@ jobs:
             asset_name: vault-windowsV1.exe
 
     steps:
+      # ---------------------------------------------------
+      # Checkout repo
+      # ---------------------------------------------------
       - name: Checkout
         uses: actions/checkout@v4
 
+      # ---------------------------------------------------
+      # Setup Python
+      # ---------------------------------------------------
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # ---------------------------------------------------
+      # Install dependencies (CRITICAL FIX)
+      # ---------------------------------------------------
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
 
+      # ---------------------------------------------------
+      # Verify critical imports BEFORE build
+      # (THIS PREVENTS YOUR argon2 crash)
+      # ---------------------------------------------------
+      - name: Verify dependencies
+        run: |
+          python -c "import supabase; print('supabase OK')"
+          python -c "import argon2; print('argon2 OK')"
+          python -c "import cryptography; print('cryptography OK')"
+          python -c "import requests; print('requests OK')"
+
+      # ---------------------------------------------------
+      # Build executable
+      # ---------------------------------------------------
       - name: Build executable
         run: pyinstaller vault.spec --noconfirm --clean
 
+      # ---------------------------------------------------
+      # Verify build output (Linux)
+      # ---------------------------------------------------
       - name: Verify artifact exists (Linux)
         if: runner.os != 'Windows'
         run: test -f "dist/${{ matrix.asset_name }}"
 
+      # ---------------------------------------------------
+      # Verify build output (Windows)
+      # ---------------------------------------------------
       - name: Verify artifact exists (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -53,10 +83,16 @@ jobs:
             throw "Expected artifact dist/${{ matrix.asset_name }} not found."
           }
 
+      # ---------------------------------------------------
+      # Generate checksum (Linux)
+      # ---------------------------------------------------
       - name: Write checksum (Linux)
         if: runner.os != 'Windows'
         run: sha256sum "dist/${{ matrix.asset_name }}" | awk '{print $1}' > "dist/${{ matrix.asset_name }}.sha256"
 
+      # ---------------------------------------------------
+      # Generate checksum (Windows)
+      # ---------------------------------------------------
       - name: Write checksum (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -64,6 +100,9 @@ jobs:
           $hash = (Get-FileHash -Algorithm SHA256 -Path "dist/${{ matrix.asset_name }}").Hash.ToLowerInvariant()
           Set-Content -Path "dist/${{ matrix.asset_name }}.sha256" -Value $hash -NoNewline
 
+      # ---------------------------------------------------
+      # Upload artifacts (manual runs only)
+      # ---------------------------------------------------
       - name: Upload workflow artifacts
         if: github.event_name != 'release'
         uses: actions/upload-artifact@v4
@@ -73,6 +112,9 @@ jobs:
             dist/${{ matrix.asset_name }}
             dist/${{ matrix.asset_name }}.sha256
 
+      # ---------------------------------------------------
+      # Upload GitHub Release assets
+      # ---------------------------------------------------
       - name: Upload release assets
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
