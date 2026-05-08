@@ -13,4 +13,4 @@ pyarmor.debug.log
 pyarmor.trace.log
 *.patched.spec
 Sourcecode/
-.vaultcli/
+

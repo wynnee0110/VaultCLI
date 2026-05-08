@@ -1,4 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
+import platform
+
+system = platform.system()
+if system == "Linux":
+    artifact_name = "vault-linuxV1"
+elif system == "Windows":
+    artifact_name = "vault-windowsV1"
+elif system == "Darwin":
+    artifact_name = "vault-macosV1"
+else:
+    artifact_name = "vault"
 
 
 a = Analysis(
@@ -22,7 +33,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='vault-linuxV1',
+    name=artifact_name,
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

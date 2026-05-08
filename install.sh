@@ -6,10 +6,14 @@ echo "🔐 Installing VaultCLI..."
 OS="$(uname -s)"
 
 if [ "$OS" = "Linux" ]; then
-URL="https://github.com/wynnee0110/VaultCLI/releases/download/v1.0.0/vault-linuxV1"
-CHECKSUM_URL="https://github.com/wynnee0110/VaultCLI/releases/download/v1.0.0/vault-linuxV1.sha256"
+  URL="https://github.com/wynnee0110/VaultCLI/releases/latest/download/vault-linuxV1"
+  CHECKSUM_URL="https://github.com/wynnee0110/VaultCLI/releases/latest/download/vault-linuxV1.sha256"
+elif [ "$OS" = "Darwin" ]; then
+  URL="https://github.com/wynnee0110/VaultCLI/releases/latest/download/vault-macosV1"
+  CHECKSUM_URL="https://github.com/wynnee0110/VaultCLI/releases/latest/download/vault-macosV1.sha256"
 else
-  echo "❌ Only Linux is supported right now"
+  echo "❌ Unsupported platform: $OS"
+  echo "For Windows, use install.ps1."
   exit 1
 fi
 
@@ -30,8 +34,15 @@ echo "🔎 Verifying checksum..."
 
 cd "$TMP_DIR"
 
-EXPECTED_HASH=$(cat vault.sha256)
-ACTUAL_HASH=$(sha256sum vault | awk '{print $1}')
+EXPECTED_HASH="$(tr -d '\r\n' < "$CHECKSUM_FILE")"
+if command -v sha256sum >/dev/null 2>&1; then
+  ACTUAL_HASH="$(sha256sum "$TMP_FILE" | awk '{print $1}')"
+elif command -v shasum >/dev/null 2>&1; then
+  ACTUAL_HASH="$(shasum -a 256 "$TMP_FILE" | awk '{print $1}')"
+else
+  echo "❌ No SHA-256 tool found (need sha256sum or shasum)."
+  exit 1
+fi
 
 if [ "$EXPECTED_HASH" != "$ACTUAL_HASH" ]; then
   echo "❌ Checksum verification failed!"

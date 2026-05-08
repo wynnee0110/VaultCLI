@@ -1,0 +1,79 @@
+name: Release Binaries
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.os_name }} binary
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            os_name: linux
+            asset_name: vault-linuxV1
+          - runner: windows-latest
+            os_name: windows
+            asset_name: vault-windowsV1.exe
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build tools
+        run: python -m pip install --upgrade pip pyinstaller
+
+      - name: Build executable
+        run: pyinstaller vault.spec --noconfirm --clean
+
+      - name: Verify artifact exists (Linux)
+        if: runner.os != 'Windows'
+        run: test -f "dist/${{ matrix.asset_name }}"
+
+      - name: Verify artifact exists (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "dist/${{ matrix.asset_name }}")) {
+            throw "Expected artifact dist/${{ matrix.asset_name }} not found."
+          }
+
+      - name: Write checksum (Linux)
+        if: runner.os != 'Windows'
+        run: sha256sum "dist/${{ matrix.asset_name }}" | awk '{print $1}' > "dist/${{ matrix.asset_name }}.sha256"
+
+      - name: Write checksum (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash -Algorithm SHA256 -Path "dist/${{ matrix.asset_name }}").Hash.ToLowerInvariant()
+          Set-Content -Path "dist/${{ matrix.asset_name }}.sha256" -Value $hash -NoNewline
+
+      - name: Upload workflow artifacts
+        if: github.event_name != 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os_name }}-release-assets
+          path: |
+            dist/${{ matrix.asset_name }}
+            dist/${{ matrix.asset_name }}.sha256
+
+      - name: Upload release assets
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/${{ matrix.asset_name }}
+            dist/${{ matrix.asset_name }}.sha256
