@@ -1,7 +1,18 @@
 # -*- mode: python ; coding: utf-8 -*-
-
+import os
 import platform
 from PyInstaller.utils.hooks import collect_submodules  
+
+hiddenimports = (
+    collect_submodules("supabase")
+    + collect_submodules("argon2")
+    + collect_submodules("cryptography")
+    + collect_submodules("questionary")
+)
+
+binaries = collect_dynamic_libs("argon2")
+
+
 
 # ---------------------------------------------------
 # Detect operating system
@@ -32,10 +43,6 @@ else:
 # PyInstaller sometimes misses dynamically loaded
 # submodules, especially in SDK-based libraries.
 # ---------------------------------------------------
-
-supabase_hiddenimports = collect_submodules("supabase")
-argon2_hiddenimports = collect_submodules("argon2")
-crypt_hiddenimports = collect_submodules("cryptography")
 
 
 # ---------------------------------------------------
