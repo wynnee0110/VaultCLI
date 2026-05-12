@@ -17,8 +17,7 @@ curl -fsSL https://raw.githubusercontent.com/wynnee0110/VaultCLI/main/install.sh
 ### Windows (PowerShell)
 
 ```powershell
-Invoke-WebRequest https://raw.githubusercontent.com/wynnee0110/VaultCLI/main/install.ps1 -OutFile install.ps1
-.\install.ps1
+irm https://raw.githubusercontent.com/wynnee0110/VaultCLI/main/install.ps1 | iex
 ```
 
 ## Obfuscated Build
