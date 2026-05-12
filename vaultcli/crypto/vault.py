@@ -152,7 +152,7 @@ def _migrate_legacy(user_id: str, raw: str, master_password: str):
     global _session_key, _session_salt
 
     OLD_KEY_FILE = os.path.join(CONFIG_DIR, ".vault_key")
-    print("🔄 Migrating vault to master-password encryption...")
+    print("Migrating vault to master-password encryption...")
 
     old_vault: dict = {}
 
@@ -161,16 +161,16 @@ def _migrate_legacy(user_id: str, raw: str, master_password: str):
             with open(OLD_KEY_FILE, "rb") as f:
                 old_key = f.read().strip()
             old_vault = json.loads(Fernet(old_key).decrypt(raw.encode()))
-            print("   ✅ Old vault decrypted via .vault_key")
+            print("   Old vault decrypted via .vault_key")
         except Exception:
-            print("   ⚠️  Could not decrypt with .vault_key — starting fresh.")
+            print("   Could not decrypt with .vault_key — starting fresh.")
     else:
         # Very old plaintext format
         try:
             old_vault = json.loads(raw)
-            print("   ✅ Old plaintext vault read.")
+            print("   Old plaintext vault read.")
         except Exception:
-            print("   ⚠️  Could not read old vault — starting fresh.")
+            print("   Could not read old vault — starting fresh.")
 
     # Derive new key and re-encrypt
     _session_salt = os.urandom(16)
@@ -181,9 +181,9 @@ def _migrate_legacy(user_id: str, raw: str, master_password: str):
     # Clean up the old key file
     if os.path.exists(OLD_KEY_FILE):
         os.remove(OLD_KEY_FILE)
-        print(f"   🗑️  Removed old key file: {OLD_KEY_FILE}")
+        print(f"   Removed old key file: {OLD_KEY_FILE}")
 
-    print("✅ Migration complete. Your vault is now secured by your master password.\n")
+    print("Migration complete. Your vault is now secured by your master password.\n")
 
 
 def get_vault(user_id: str) -> dict:
@@ -196,7 +196,7 @@ def get_vault(user_id: str) -> dict:
     try:
         return json.loads(_fernet().decrypt(token.encode()))
     except InvalidToken:
-        print("❌ Decryption failed — check your master password.")
+        print("Decryption failed — check your master password.")
         return {}
 
 

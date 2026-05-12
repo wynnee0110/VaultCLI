@@ -97,23 +97,23 @@ def command_update():
         response.raise_for_status()
         release = response.json()
     except requests.RequestException as exc:
-        print(f"❌ Could not check for updates: {exc}")
+        print(f"Could not check for updates: {exc}")
         return 1
 
     latest_version = release.get("tag_name")
     if not latest_version:
-        print("❌ Latest release information is unavailable.")
+        print("Latest release information is unavailable.")
         return 1
 
     if _normalize_version(latest_version) == _normalize_version(VERSION):
-        print("✅ Already up to date")
+        print("Already up to date")
         return 0
 
-    print(f"⬆️ Updating from {VERSION} → {latest_version}")
+    print(f"Updating from {VERSION} -> {latest_version}")
 
     current_path = _current_install_path()
     if not current_path:
-        print("❌ Self-update only works from an installed VaultCLI executable.")
+        print("Self-update only works from an installed VaultCLI executable.")
         print(f"Download the latest binary from: {RELEASES_URL}")
         return 1
 
@@ -122,7 +122,7 @@ def command_update():
     try:
         asset_candidates = _platform_asset_candidates(current_name)
     except RuntimeError as exc:
-        print(f"❌ {exc}")
+        print(f"{exc}")
         return 1
 
     assets = {
@@ -135,7 +135,7 @@ def command_update():
     download_url = assets.get(asset_name) if asset_name else None
 
     if not download_url:
-        print("❌ Could not find binary")
+        print("Could not find binary")
         print(f"Expected one of: {', '.join(asset_candidates)}")
         return 1
 
@@ -144,16 +144,16 @@ def command_update():
     try:
         binary = _download_release(download_url)
     except requests.RequestException as exc:
-        print(f"❌ Could not download update: {exc}")
+        print(f"Could not download update: {exc}")
         return 1
 
     try:
         _replace_installed_binary(current_path, binary)
     except OSError as exc:
-        print(f"❌ Could not replace executable at {current_path}: {exc}")
+        print(f"Could not replace executable at {current_path}: {exc}")
         if sys.platform == "win32":
             _print_windows_update_fallback()
         return 1
 
-    print("✅ Update complete! Restart CLI.")
+    print("Update complete! Restart CLI.")
     return 0

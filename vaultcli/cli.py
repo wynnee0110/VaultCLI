@@ -18,7 +18,7 @@ from vaultcli.commands.init import run_setup_wizard
 from vaultcli.ui.prompts import auth_menu
 
 def run_default() -> int:
-    print("Welcome to Vault CLI 🔐")
+    print("Welcome to Vault CLI")
 
     if not ensure_configured():
         return 1
@@ -29,7 +29,7 @@ def run_default() -> int:
         while True:
             result = auth_menu()
             if result is None or result == "0":
-                print("Bye 👋")
+                print("Bye")
                 return 0
             if result == "1":
                 from vaultcli.commands.auth import prompt_login

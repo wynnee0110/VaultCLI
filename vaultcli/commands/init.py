@@ -38,7 +38,7 @@ def _prompt_non_empty(label: str) -> str:
         value = input(f"{label}: ").strip()
         if value:
             return value
-        print("❌ This field is required.")
+        print("This field is required.")
 
 
 def _select_provider() -> str:
@@ -54,10 +54,10 @@ def _select_provider() -> str:
             return "supabase"
 
         if choice in {"2", "3"}:
-            print("⚠️  That provider is planned but not available yet. Please choose Supabase for now.")
+            print("That provider is planned but not available yet. Please choose Supabase for now.")
             continue
 
-        print("❌ Invalid option.")
+        print("Invalid option.")
 
 
 def _confirm_overwrite() -> bool:
@@ -100,13 +100,13 @@ def run_setup_wizard():
             "anonKey": anon_key,
         })
     except Exception as exc:
-        print(f"❌ Could not initialize the Supabase client: {exc}")
+        print(f"Could not initialize the Supabase client: {exc}")
         return False
 
     save_config(provider, url, anon_key)
     reset_db()
 
-    print(f"\n✅ Configuration saved to {CONFIG_FILE}")
+    print(f"\nConfiguration saved to {CONFIG_FILE}")
     print("\nRun this SQL in the Supabase SQL editor before storing vault data:\n")
     print(SUPABASE_SCHEMA_SQL)
     input("\nPress Enter after you have run or saved the SQL.")

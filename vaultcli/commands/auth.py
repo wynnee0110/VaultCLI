@@ -25,7 +25,7 @@ def ensure_configured() -> bool:
         load_config()
         return True
     except ConfigError as exc:
-        print(f"❌ {exc}")
+        print(f"{exc}")
         return False
 
 def try_resume_session(verbose: bool = True) -> str | None:
@@ -45,13 +45,13 @@ def try_resume_session(verbose: bool = True) -> str | None:
             latest = load_session()
             if latest and latest.get("user"):
                 if verbose:
-                    print("✅ Session restored")
+                    print("Session restored")
                 return latest["user"]["id"]
         except Exception:
             pass
 
     if verbose:
-        print("🔄 Resuming session...")
+        print("Resuming session...")
     if refresh_session(refresh_token):
         latest = load_session()
         if latest and latest.get("user"):
@@ -60,11 +60,11 @@ def try_resume_session(verbose: bool = True) -> str | None:
             if new_access and new_refresh:
                 restore_db_session(new_access, new_refresh)
             if verbose:
-                print("✅ Session refreshed")
+                print("Session refreshed")
             return latest["user"]["id"]
 
     if verbose:
-        print("⚠️  Session expired — please log in again.")
+        print("Session expired — please log in again.")
     clear_master_key()
     clear_session()
     return None
@@ -72,36 +72,36 @@ def try_resume_session(verbose: bool = True) -> str | None:
 def setup_master_key(user_id: str, verbose: bool = True):
     if try_restore_master_key(user_id):
         if verbose:
-            print("✅ Vault unlocked from trusted local session.")
+            print("Vault unlocked from trusted local session.")
         return
 
     if is_master_key_unlocked():
         return
 
     for attempt in range(3):
-        mp = getpass.getpass("🔑 Master password: ")
+        mp = getpass.getpass("Master password: ")
         try:
             is_existing = setup_master_password(user_id, mp)
             if is_existing:
                 if verbose:
-                    print("🔑 Master password confirmed.")
+                    print("Master password confirmed.")
             else:
-                confirm = getpass.getpass("🔑 Confirm master password: ")
+                confirm = getpass.getpass("Confirm master password: ")
                 if mp != confirm:
-                    print("❌ Passwords do not match. Try again.")
+                    print("Passwords do not match. Try again.")
                     continue
                 if verbose:
-                    print("✅ Master password set. Keep it safe — it's the only way to recover your vault.")
+                    print("Master password set. Keep it safe — it's the only way to recover your vault.")
             return
         except ValueError:
             remaining = 2 - attempt
             if remaining:
-                print(f"❌ Wrong master password. {remaining} attempt(s) left.")
+                print(f"Wrong master password. {remaining} attempt(s) left.")
             else:
-                print("❌ Too many failed attempts. Exiting.")
+                print("Too many failed attempts. Exiting.")
                 raise SystemExit(1)
         except Exception as exc:
-            print("❌ Could not open the remote vault store.")
+            print("Could not open the remote vault store.")
             print("Make sure you ran the SQL from `vault init` in your Supabase project.")
             print(f"Details: {exc}")
             raise SystemExit(1)
@@ -112,7 +112,7 @@ def prompt_login() -> str | None:
     try:
         result = login(email, password)
         if not result.user:
-            print("❌ Login failed.")
+            print("Login failed.")
             return None
         session = load_session()
         if session:
@@ -120,10 +120,10 @@ def prompt_login() -> str | None:
                 session.get("access_token", ""),
                 session.get("refresh_token", ""),
             )
-        print("✅ Logged in")
+        print("Logged in")
         return result.user.id
     except Exception as exc:
-        print(f"❌ Login failed: {exc}")
+        print(f"Login failed: {exc}")
         return None
 
 def prompt_signup() -> bool:
@@ -131,18 +131,18 @@ def prompt_signup() -> bool:
     password = getpass.getpass("Password (min 6 chars): ")
     confirm = getpass.getpass("Confirm password: ")
     if password != confirm:
-        print("❌ Passwords do not match.")
+        print("Passwords do not match.")
         return False
 
     try:
         result = signup(email, password)
         if result.user:
-            print("✅ Account created! Check your email to confirm, then run `vault login`.")
+            print("Account created! Check your email to confirm, then run `vault login`.")
         else:
-            print("⚠️  Signup may require email confirmation before login.")
+            print("Signup may require email confirmation before login.")
         return True
     except Exception as exc:
-        print(f"❌ Signup failed: {exc}")
+        print(f"Signup failed: {exc}")
         return False
 
 def command_login() -> int:
@@ -176,5 +176,5 @@ def command_logout() -> int:
         pass
 
     clear_session()
-    print("👋 Logged out.")
+    print("Logged out.")
     return 0
