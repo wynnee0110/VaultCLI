@@ -1,7 +1,7 @@
 import uuid
 
 from vaultcli.core.vault_manager import find_entry_by_path, find_account_by_path, format_secret_path, migrate_vault
-from vaultcli.core.secret_types import TYPE_LOGIN
+from vaultcli.core.secret_types import TYPE_LOGIN, TYPE_API_KEY, TYPE_SECURE_NOTE, TYPE_SSH_KEY
 from vaultcli.crypto.vault import get_vault, save_vault
 from vaultcli.commands.auth import ensure_configured, get_user_id, prompt_login, try_resume_session, setup_master_key
 
@@ -24,16 +24,24 @@ def persist_vault(user_id: str, vault: dict) -> bool:
         return False
 
 
-def store_secret_shortcut(path: str, secret: str) -> int:
+def store_secret_shortcut(path: str, secret: str, secret_type: str | None = None) -> int:
     """
-    CLI shortcut: ``vault set <service>/<identifier> <secret>``
+    CLI shortcut: ``vault put <service>/<identifier> <value> [--type TYPE]``
 
-    For login  entries the identifier is the username and *secret* is the password.
-    For api_key entries the identifier is the key_name and *secret* is the api_key value.
-    For ssh_key entries the identifier is the key_name and *secret* is the private_key.
-    For secure_note the identifier is the title and *secret* is the note body.
+    The identifier and stored field depend on the type:
 
-    If the entry doesn't exist yet it is created as a TYPE_LOGIN entry (legacy behaviour).
+    +--------------+-------------+----------------------------+
+    | Type         | Identifier  | Field that stores <value>  |
+    +==============+=============+============================+
+    | login        | username    | password                   |
+    | api_key      | key_name    | api_key                    |
+    | secure_note  | title       | note                       |
+    | ssh_key      | key_name    | private_key                |
+    +--------------+-------------+----------------------------+
+
+    ``secret_type`` only matters when *creating* a brand-new entry.
+    For existing entries the stored type is preserved and the matching
+    field is updated regardless of the ``--type`` flag.
     """
     if not ensure_configured():
         return 1
@@ -59,27 +67,50 @@ def store_secret_shortcut(path: str, secret: str) -> int:
 
     existing, service_name, identifier = find_entry_by_path(vault, path)
 
+    # Map type → which field holds the primary secret value
+    field_map = {
+        TYPE_LOGIN:       "password",
+        TYPE_API_KEY:     "api_key",
+        TYPE_SECURE_NOTE: "note",
+        TYPE_SSH_KEY:     "private_key",
+    }
+
     if existing:
-        # Update the relevant secret field based on type
+        # Update the relevant secret field, preserving the existing type
         t = existing.get("secret_type", TYPE_LOGIN)
-        field_map = {
-            "login":        "password",
-            "api_key":      "api_key",
-            "secure_note":  "note",
-            "ssh_key":      "private_key",
-        }
         existing[field_map.get(t, "password")] = secret
         action = "updated"
     else:
-        # Create new entry as legacy login type
-        accounts = services.setdefault(service_name, [])
-        accounts.append({
+        # Create a new entry using the requested (or default) type
+        new_type = secret_type or TYPE_LOGIN
+        value_field = field_map.get(new_type, "password")
+
+        # Build skeleton for the chosen type — required fields get a placeholder
+        new_entry: dict = {
             "id":          str(uuid.uuid4()),
-            "secret_type": TYPE_LOGIN,
-            "username":    identifier,
-            "email":       "",
-            "password":    secret,
-        })
+            "secret_type": new_type,
+        }
+
+        if new_type == TYPE_LOGIN:
+            new_entry["username"] = identifier
+            new_entry["email"]    = ""
+            new_entry["password"] = secret
+
+        elif new_type == TYPE_API_KEY:
+            new_entry["key_name"] = identifier
+            new_entry["api_key"]  = secret
+
+        elif new_type == TYPE_SECURE_NOTE:
+            new_entry["title"] = identifier
+            new_entry["note"]  = secret
+
+        elif new_type == TYPE_SSH_KEY:
+            new_entry["key_name"]    = identifier
+            new_entry["private_key"] = secret
+            new_entry["public_key"]  = ""
+            new_entry["passphrase"]  = ""
+
+        services.setdefault(service_name, []).append(new_entry)
         action = "stored"
 
     if not persist_vault(user_id, vault):

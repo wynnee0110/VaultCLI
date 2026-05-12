@@ -65,9 +65,24 @@ def build_parser() -> argparse.ArgumentParser:
     get_parser.add_argument("path", help="<service>/<title>")
 
     # PUT command
-    put_parser = subparsers.add_parser("put", help="Store secret: vault put <service>/<title> <secret>")
-    put_parser.add_argument("path", help="<service>/<title>")
-    put_parser.add_argument("secret", help="Secret value")
+    put_parser = subparsers.add_parser(
+        "put",
+        help="Store secret: vault put <service>/<identifier> <value> [--type TYPE]",
+    )
+    put_parser.add_argument("path", help="<service>/<identifier>")
+    put_parser.add_argument("secret", help="Secret value to store")
+    put_parser.add_argument(
+        "--type", "-t",
+        dest="secret_type",
+        choices=["login", "api_key", "secure_note", "ssh_key"],
+        default=None,
+        metavar="TYPE",
+        help=(
+            "Secret type for NEW entries: "
+            "login | api_key | secure_note | ssh_key "
+            "(default: login). Ignored when updating an existing entry."
+        ),
+    )
 
     return parser
 
@@ -96,7 +111,7 @@ def main(argv=None) -> int:
     if args.command == "get":
         return get_secret_shortcut(args.path)
     if args.command == "put":
-        return store_secret_shortcut(args.path, args.secret)
+        return store_secret_shortcut(args.path, args.secret, secret_type=args.secret_type)
     if args.command == "update":
         return command_update()
 
