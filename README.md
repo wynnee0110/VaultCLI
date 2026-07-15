@@ -37,4 +37,4 @@ This repo includes a GitHub Actions workflow at `.github/workflows/release-binar
 - Publish a GitHub release to automatically build and attach:
   - `vault-linuxV1` and `vault-linuxV1.sha256`
   - `vault-windowsV1.exe` and `vault-windowsV1.exe.sha256`
-- Or run it manually from the Actions tab (`workflow_dispatch`) to test builds without creating a release.
+- Or run it manually from the Actions tab (`workflow_dispatch`) to test builds without creating a release
