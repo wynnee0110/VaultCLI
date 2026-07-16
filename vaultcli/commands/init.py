@@ -45,16 +45,22 @@ def _select_provider() -> str:
     while True:
         print("\nDatabase provider:")
         print("  1. Supabase (supported)")
-        print("  2. PostgreSQL (coming soon)")
-        print("  3. SQLite (coming soon)")
+        print("  2. Custom Server (supported)")
+        print("  3. AWS Cognito + DynamoDB (supported)")
+        print("  4. PostgreSQL (coming soon)")
+        print("  5. SQLite (coming soon)")
 
         choice = input("\nSelect provider: ").strip()
 
         if choice == "1":
             return "supabase"
+        if choice == "2":
+            return "custom"
+        if choice == "3":
+            return "aws"
 
-        if choice in {"2", "3"}:
-            print("That provider is planned but not available yet. Please choose Supabase for now.")
+        if choice in {"4", "5"}:
+            print("That provider is planned but not available yet. Please choose one of the supported providers.")
             continue
 
         print("Invalid option.")
@@ -89,29 +95,55 @@ def run_setup_wizard():
 
     provider = _select_provider()
 
-    print("\nSupabase configuration")
-    url = _prompt_non_empty("Supabase Project URL")
-    anon_key = _prompt_non_empty("Supabase Anon Key")
+    config_payload = {"provider": provider}
+
+    if provider == "supabase":
+        print("\nSupabase configuration")
+        config_payload["url"] = _prompt_non_empty("Supabase Project URL")
+        config_payload["anonKey"] = _prompt_non_empty("Supabase Anon Key")
+    elif provider == "custom":
+        print("\nCustom Server configuration")
+        config_payload["server_url"] = _prompt_non_empty("Server URL (e.g., http://localhost:8000)")
+    elif provider == "aws":
+        print("\nAWS configuration")
+        config_payload["aws_region"] = _prompt_non_empty("AWS Region (e.g., us-east-1)")
+        config_payload["aws_cognito_client_id"] = _prompt_non_empty("Cognito App Client ID")
+        config_payload["aws_dynamodb_table"] = _prompt_non_empty("DynamoDB Table Name")
+        
+        # Optional credentials
+        access_key = input("AWS Access Key ID (optional, press Enter to skip): ").strip()
+        if access_key:
+            secret_key = input("AWS Secret Access Key: ").strip()
+            config_payload["aws_access_key"] = access_key
+            config_payload["aws_secret_key"] = secret_key
 
     try:
-        create_db({
-            "provider": provider,
-            "url": url,
-            "anonKey": anon_key,
-        })
+        create_db(config_payload)
     except Exception as exc:
-        print(f"Could not initialize the Supabase client: {exc}")
+        print(f"Could not initialize the database client: {exc}")
+        if provider == "aws":
+            print("Note: Ensure you have installed 'boto3' via `pip install boto3` to use AWS.")
         return False
 
-    save_config(provider, url, anon_key)
+    # Save to config file
+    if provider == "supabase":
+        save_config(provider, config_payload["url"], config_payload["anonKey"])
+    else:
+        save_config(provider, **config_payload)
+        
     reset_db()
 
     print(f"\nConfiguration saved to {CONFIG_FILE}")
-    print("\nRun this SQL in the Supabase SQL editor before storing vault data:\n")
-    print(SUPABASE_SCHEMA_SQL)
-    input("\nPress Enter after you have run or saved the SQL.")
+    
+    if provider == "supabase":
+        print("\nRun this SQL in the Supabase SQL editor before storing vault data:\n")
+        print(SUPABASE_SCHEMA_SQL)
+        input("\nPress Enter after you have run or saved the SQL.")
+    elif provider == "aws":
+        print("\nEnsure your DynamoDB table exists and has a Partition Key named 'user_id' (Type: String).")
+        input("\nPress Enter after verifying your AWS environment is ready.")
 
     print("\nSetup complete.")
     print("VaultCLI encrypts your vault locally before anything is written to the database.")
-    print("Next step: run `vault login`.")
+    print("Next step: run `vault login` or `vault signup` depending on your provider.")
     return True

@@ -95,10 +95,25 @@ def load_config(required: bool = True) -> dict | None:
             raise ConfigError(
                 f"VaultCLI config at {CONFIG_FILE} is incomplete for PostgreSQL. Missing `pgDsn`."
             )
+    elif provider == "custom":
+        server_url = data.get("server_url")
+        if not server_url:
+            raise ConfigError(
+                f"VaultCLI config at {CONFIG_FILE} is incomplete for Custom Server. Missing `server_url`."
+            )
+    elif provider == "aws":
+        region = data.get("aws_region")
+        client_id = data.get("aws_cognito_client_id")
+        table = data.get("aws_dynamodb_table")
+        if not region or not client_id or not table:
+            raise ConfigError(
+                f"VaultCLI config at {CONFIG_FILE} is incomplete for AWS. "
+                "Missing 'aws_region', 'aws_cognito_client_id', or 'aws_dynamodb_table'."
+            )
     else:
         raise ConfigError(
             f"VaultCLI config at {CONFIG_FILE} has unsupported provider '{provider}'. "
-            "Use `supabase` or `postgresql`."
+            "Use `supabase`, `custom`, or `aws`."
         )
 
     return data
