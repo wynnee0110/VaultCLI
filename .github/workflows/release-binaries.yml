@@ -20,6 +20,9 @@ jobs:
           - runner: ubuntu-latest
             os_name: linux
             asset_name: vault-linuxV1
+          - runner: macos-latest
+            os_name: macos
+            asset_name: vault-macosV1
           - runner: windows-latest
             os_name: windows
             asset_name: vault-windowsV1.exe
@@ -66,9 +69,9 @@ jobs:
         run: pyinstaller vault.spec --noconfirm --clean
 
       # ---------------------------------------------------
-      # Verify build output (Linux)
+      # Verify build output (Linux / macOS)
       # ---------------------------------------------------
-      - name: Verify artifact exists (Linux)
+      - name: Verify artifact exists (Linux / macOS)
         if: runner.os != 'Windows'
         run: test -f "dist/${{ matrix.asset_name }}"
 
@@ -84,11 +87,16 @@ jobs:
           }
 
       # ---------------------------------------------------
-      # Generate checksum (Linux)
+      # Generate checksum (Linux / macOS)
       # ---------------------------------------------------
-      - name: Write checksum (Linux)
+      - name: Write checksum (Linux / macOS)
         if: runner.os != 'Windows'
-        run: sha256sum "dist/${{ matrix.asset_name }}" | awk '{print $1}' > "dist/${{ matrix.asset_name }}.sha256"
+        run: |
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum "dist/${{ matrix.asset_name }}" | awk '{print $1}' > "dist/${{ matrix.asset_name }}.sha256"
+          else
+            shasum -a 256 "dist/${{ matrix.asset_name }}" | awk '{print $1}' > "dist/${{ matrix.asset_name }}.sha256"
+          fi
 
       # ---------------------------------------------------
       # Generate checksum (Windows)

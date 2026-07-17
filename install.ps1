@@ -1,7 +1,14 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-Write-Host "Installing VaultCLI for Windows..."
+# Confirmation prompt
+$response = Read-Host "Do you want to install VaultCLI? (y/n)"
+if ($response -notmatch '^[yY](es)?$') {
+    Write-Host "Installation cancelled." -ForegroundColor Yellow
+    exit 0
+}
+
+Write-Host "`nInstalling VaultCLI..." -ForegroundColor Cyan
 
 $repo = "wynnee0110/VaultCLI"
 $binaryName = "vault-windowsV1.exe"
@@ -16,11 +23,11 @@ $tmpChecksum = Join-Path $tmpDir "vault.sha256"
 try {
     New-Item -ItemType Directory -Path $tmpDir | Out-Null
 
-    Write-Host "Downloading binary..."
+    Write-Host "-> Downloading release files..." -ForegroundColor Gray
     Invoke-WebRequest -UseBasicParsing -Uri $binaryUrl -OutFile $tmpExe
     Invoke-WebRequest -UseBasicParsing -Uri $checksumUrl -OutFile $tmpChecksum
 
-    Write-Host "Verifying checksum..."
+    Write-Host "-> Verifying checksum..." -ForegroundColor Gray
     $expected = (Get-Content -Path $tmpChecksum -Raw).Trim()
     $actual = (Get-FileHash -Algorithm SHA256 -Path $tmpExe).Hash.ToLowerInvariant()
     if ($expected.ToLowerInvariant() -ne $actual) {
@@ -42,10 +49,11 @@ try {
     if ($pathEntries -notcontains $installDir) {
         $newUserPath = if ($userPath) { "$userPath;$installDir" } else { $installDir }
         [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
-        Write-Host "Added $installDir to user PATH. Restart your terminal."
+        Write-Host "-> Added $installDir to user PATH." -ForegroundColor Gray
+        Write-Host "   (Note: Please restart your terminal to apply PATH changes)" -ForegroundColor Gray
     }
 
-    Write-Host "Installed! Run: vault"
+    Write-Host "`nVaultCLI successfully installed! Run 'vault' to get started." -ForegroundColor Green
 }
 finally {
     if (Test-Path $tmpDir) {

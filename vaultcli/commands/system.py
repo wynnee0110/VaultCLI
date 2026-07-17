@@ -109,7 +109,21 @@ def command_update():
         print("Already up to date")
         return 0
 
-    print(f"Updating from {VERSION} -> {latest_version}")
+    print("\n  A new version of VaultCLI is available!")
+    print(f"  - Current version: {VERSION}")
+    print(f"  - Latest version:  {latest_version}\n")
+
+    try:
+        choice = input("Do you want to update? (y/n): ").strip().lower()
+    except (KeyboardInterrupt, EOFError):
+        print("\nUpdate cancelled.")
+        return 0
+
+    if choice not in ("y", "yes"):
+        print("Update cancelled.")
+        return 0
+
+    print(f"\nUpdating from {VERSION} -> {latest_version}...")
 
     current_path = _current_install_path()
     if not current_path:
