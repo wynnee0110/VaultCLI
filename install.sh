@@ -10,11 +10,21 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Confirmation prompt
-read -rp "Do you want to install VaultCLI? (y/n): " response
+if [ -t 0 ]; then
+  read -rp "Do you want to install VaultCLI? (y/n): " response
+else
+  if { true < /dev/tty; } 2>/dev/null; then
+    read -rp "Do you want to install VaultCLI? (y/n): " response < /dev/tty
+  else
+    response="y"
+  fi
+fi
+
 if [[ ! "$response" =~ ^[yY](es)?$ ]]; then
   echo -e "${YELLOW}Installation cancelled.${NC}"
   exit 0
 fi
+
 
 echo -e "\n${CYAN}Installing VaultCLI...${NC}"
 
