@@ -77,4 +77,4 @@ fi
 chmod +x "$TMP_FILE"
 sudo mv "$TMP_FILE" /usr/local/bin/vault
 
-echo -e "\n${GREEN}VaultCLI successfully installed! Run 'vault' to get started.${NC}"
+echo -e "\n${GREEN}VaultCLI successfully installed! Run 'vault init' to get started.${NC}"
