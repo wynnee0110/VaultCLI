@@ -23,8 +23,7 @@ dependencies = [
 
 [project.scripts]
 vault = "vaultcli.cli:main"
-vault-api = "backend.server:run"
 
 
 [tool.setuptools]
-packages = ["vaultcli", "backend"]
+packages = ["vaultcli"]
