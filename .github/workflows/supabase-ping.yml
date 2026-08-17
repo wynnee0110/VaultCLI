@@ -12,5 +12,27 @@ jobs:
 
     steps:
       - name: Ping Supabase project
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          curl -sS --fail "${{ secrets.SUPABASE_URL }}/auth/v1/health"
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "::error::SUPABASE_URL secret is not set!"
+            exit 1
+          fi
+
+          # Strip trailing slash if present
+          URL="${SUPABASE_URL%/}"
+
+          HEADERS=()
+          if [ -n "$SUPABASE_ANON_KEY" ]; then
+            HEADERS=(-H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          else
+            echo "::warning::SUPABASE_ANON_KEY secret is not set. Requests requiring API key authentication may fail."
+          fi
+
+          echo "Pinging Supabase Auth health endpoint..."
+          curl -sS --fail "${HEADERS[@]}" "$URL/auth/v1/health"
+
+          echo "Pinging Supabase REST API endpoint..."
+          curl -sS --fail "${HEADERS[@]}" "$URL/rest/v1/"
