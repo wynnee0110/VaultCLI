@@ -21,19 +21,28 @@ def _write_session_file(data: dict):
     secure_write_json(SESSION_FILE, data)
 
 
-def save_session(session):
+def save_session(session, user=None):
     current = _read_session_file()
     current_user = ((current.get("user") or {}).get("id")) if current else None
+
+    user_id = None
+    if user:
+        user_id = user.id if hasattr(user, "id") else (user.get("id") if isinstance(user, dict) else str(user))
+    elif hasattr(session, "user") and session.user:
+        user_id = session.user.id if hasattr(session.user, "id") else (session.user.get("id") if isinstance(session.user, dict) else str(session.user))
+    elif current_user:
+        user_id = current_user
+
     payload = {
         "access_token": session.access_token,
         "refresh_token": session.refresh_token,
         "user": {
-            "id": session.user.id
+            "id": user_id
         }
     }
 
     # Keep a still-valid master unlock cache when auth tokens rotate.
-    if current.get("master_unlock") and current_user == session.user.id:
+    if current.get("master_unlock") and user_id and current_user == user_id:
         payload["master_unlock"] = current["master_unlock"]
 
     _write_session_file(payload)

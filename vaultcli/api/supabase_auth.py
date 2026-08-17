@@ -9,7 +9,7 @@ def signup(email, password):
 def login(email, password):
     result = get_db().login(email, password)
     if result.session:
-        save_session(result.session)
+        save_session(result.session, result.user)
     return result
 
 
@@ -18,7 +18,7 @@ def refresh_session(refresh_token):
     try:
         result = get_db().refresh_session(refresh_token)
         if result.session:
-            save_session(result.session)
+            save_session(result.session, result.user)
             return True
     except Exception:
         pass
