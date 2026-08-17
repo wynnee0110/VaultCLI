@@ -33,6 +33,11 @@ jobs:
 
           echo "Pinging Supabase Auth health endpoint..."
           curl -sS --fail "${HEADERS[@]}" "$URL/auth/v1/health"
+          echo ""
 
           echo "Pinging Supabase REST API endpoint..."
-          curl -sS --fail "${HEADERS[@]}" "$URL/rest/v1/"
+          curl -sS --fail -X OPTIONS "${HEADERS[@]}" "$URL/rest/v1/"
+          echo ""
+          if [ -n "$SUPABASE_ANON_KEY" ]; then
+            curl -sS --fail "${HEADERS[@]}" "$URL/rest/v1/vaults?limit=1" > /dev/null
+          fi
