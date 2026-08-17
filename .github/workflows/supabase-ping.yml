@@ -1,0 +1,19 @@
+name: Supabase Ping
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Keep Supabase project active
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping Supabase project
+        run: |
+          curl -sS --fail \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/"
